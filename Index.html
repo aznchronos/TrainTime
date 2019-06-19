@@ -88,19 +88,10 @@
             var trainDest = childSnap.val().trainDestinations;
             var trainStart = childSnap.val().trainDestinations;
             var tFrequency = childSnap.val().monthlyRates;
+            var next = childSnap.val().next;
+            var min = childSnap.val().min;
 
-            var tRow = $("tr>");
-            var nametd = $("<td>").text(trainName);
-            var desttd = $("<td>").text(trainDest);
-            var starttd = $("<td>").text(trainStart);
-            var frequencytd = $("<td>").text(tFrequency);
-
-            // console.log(nametd);
-            // console.log(desttd);
-            // console.log(starttd);
-            // console.log(frequencytd);
-            tRow.append(nametd, desttd, frequencytd, starttd);
-            $("#trainTable > tbody").append(tRow);
+            $("#trainTable > tbody").append("<tr><td>" + trainName + "</td><td>" + trainDest + "</td><td>" + tFrequency + "</td><td>" + next + "</td><td>" + min + "</td></tr>");
         });
 
         $("#add-train").on("click", function () {
