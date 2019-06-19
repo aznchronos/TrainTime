@@ -18,7 +18,7 @@
     <div class="card m-3">
         <div class="card-header">Current Train Schedule</div>
         <div class="card-body">
-            <table class="table">
+            <table class="table" id="trainTable">
                 <thead>
                     <tr>
                         <th scope="col">Train Name</th>
@@ -30,11 +30,11 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td scope="col">Example Express</td>
+                        <!-- <td scope="col">Example Express</td>
                         <td scope="col">Example Ville</td>
                         <td scope="col">xx min</td>
                         <td scope="col">xx:xx pm</td>
-                        <td scope="col">xx mins away</td>
+                        <td scope="col">xx mins away</td> -->
                     </tr>
                 </tbody>
             </table>
@@ -46,11 +46,11 @@
             <label>Train Name:</label><br>
             <input type="text" placeholder="Full Name" class="border rounded w-100" id="newName"><br>
             <label>Destination:</label><br>
-            <input type="text" placeholder="Role" class="border rounded w-100" id="newDest"><br>
+            <input type="text" placeholder="Destination" class="border rounded w-100" id="newDest"><br>
             <label>First Train Time (HH:mm - military time):</label><br>
             <input type="text" placeholder="mm/dd/yyyy" class="border rounded w-100" id="newStart"><br>
             <label for="rate">Frequency (min):</label><br>
-            <input type="text" placeholder="$$$$" class="border rounded w-100" id="newFrequency"><br>
+            <input type="text" placeholder="Minutes" class="border rounded w-100" id="newFrequency"><br>
             <button type="submit" class="btn btn-primary float-right mt-3" id="add-train">Submit</button>
         </div>
     </div>
@@ -82,30 +82,12 @@
         var database = firebase.database();
         //==========================================
 
-        var tFrequency = 3;
-        var firstTime = "03:30";
-        var firstTimeConverted = moment(firstTime, "HH:mm").subtract(1, "years");
-        // console.log(firstTimeConverted);
-
-        var currentTime = moment();
-        var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
-        // console.log("DIFFERENCE IN TIME: " + diffTime);
-
-        var tRemainder = diffTime % tFrequency;
-        // console.log("Remainder: " + tRemainder);
-
-        var tMinutesTillTrain = tFrequency - tRemainder;
-        // console.log("Minutes till Train: " + tMinutesTillTrain);
-
-        var nextTrain = moment().add(tMinutesTillTrain, "minutes");
-        // console.log("Arrival Time: " + moment(nextTrain).format("hh:mm"));
-
         // Moved out of onclick function so that it'll automatically populate the page with information
-        database.ref().on("value", function (snapshot) {
-            var trainName = snapshot.val().trainNames;
-            var trainDest = snapshot.val().trainDestinations;
-            var trainStart = snapshot.val().trainDestinations;
-            var tFrequency = snapshot.val().monthlyRates;
+        database.ref().on("child_added", function (childSnap){
+            var trainName = childSnap.val().trainNames;
+            var trainDest = childSnap.val().trainDestinations;
+            var trainStart = childSnap.val().trainDestinations;
+            var tFrequency = childSnap.val().monthlyRates;
 
             var tRow = $("tr>");
             var nametd = $("<td>").text(trainName);
@@ -118,7 +100,7 @@
             // console.log(starttd);
             // console.log(frequencytd);
             tRow.append(nametd, desttd, frequencytd, starttd);
-            $("tbody").append(tRow);
+            $("#trainTable > tbody").append(tRow);
         });
 
         $("#add-train").on("click", function () {
@@ -146,30 +128,35 @@
                 return false;
             }
 
-            database.ref().push({
+            // Conversion for time:
+            var firstTimeConverted = moment(trainStart, "HH:mm").subtract(1, "years");
+            // console.log(firstTimeConverted);
+
+            var currentTime = moment();
+            var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+            // console.log("DIFFERENCE IN TIME: " + diffTime);
+
+            var tRemainder = diffTime % tFrequency;
+            // console.log("Remainder: " + tRemainder);
+
+            var tMinutesTillTrain = tFrequency - tRemainder;
+            // console.log("Minutes till Train: " + tMinutesTillTrain);
+
+            var nextTrain = moment().add(tMinutesTillTrain, "minutes");
+            // console.log("Arrival Time: " + moment(nextTrain).format("hh:mm"));
+
+
+            // Push all information in a var
+            var newTrain = {
                 //server:local
-                newTrain = {
                 trainNames: trainName,
                 trainDestinations: trainDest,
                 trainStarts: trainStart,
                 trainFrequency: tFrequency,
                 dateAdded: firebase.database.ServerValue.TIMESTAMP
-                }
-            });
-        });
-
-
-        database.ref().on("value", function (snapshot) {
-
-            var sv = snapshot.val();
-
-            var svArr = Object.keys(sv);
-
-            var lastIndex = svArr.length - 1;
-
-            var lastKey = svArr[lastIndex];
-
-            var lastObj = sv[lastKey];
+            }
+            console.log(newTrain);
+            database.ref().push(newTrain);
 
         });
     </script>
