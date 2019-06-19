@@ -1,0 +1,7 @@
+.imgBG {
+ background-image: url("../images/Clip.png");
+ background-size: cover;
+ background-repeat: no-repeat;
+ padding-bottom: 150px;
+ padding-top: 150px;
+}

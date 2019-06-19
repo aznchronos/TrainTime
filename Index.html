@@ -6,13 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
     <title>Train Time</title>
 </head>
 
-<body>
-    <div class="jumbotron mx-3 bg-info">
-        <h1 class="text-center text-white">Anytime is Train Time</h1>
-        <h3 class="text-center text-white">Choo Choo. Chee Chee</h2>
+<body class="bg-dark">
+    <!-- <div class="jumbotron mx-3 bg-info "> -->
+    <div class="jumbotron imgBG ">
+        <h1 class="text-center text-primary">Anytime is Train Time</h1>
+        <h3 class="text-center text-primary">Choo Choo. Chee Chee</h2>
     </div>
 
     <div class="card m-3">
@@ -40,7 +42,7 @@
             </table>
         </div>
     </div>
-    <div class="card mt-4 mx-3">
+    <div class="card my-4 mx-3">
         <div class="card-header">Add Train</div>
         <div class="card-body">
             <label>Train Name:</label><br>
@@ -48,9 +50,9 @@
             <label>Destination:</label><br>
             <input type="text" placeholder="Destination" class="border rounded w-100" id="newDest"><br>
             <label>First Train Time (HH:mm - military time):</label><br>
-            <input type="text" placeholder="HH:mm" class="border rounded w-100" id="newStart"><br>
-            <label for="rate">Frequency (min):</label><br>
-            <input type="text" placeholder="Minutes" class="border rounded w-100" id="newFrequency"><br>
+            <input type="time" class="border rounded w-100" id="newStart"><br>
+            <label for="Frequency">Frequency (min):</label><br>
+            <input type="number" placeholder="Minutes" class="border rounded w-100" id="newFrequency"><br>
             <button type="submit" class="btn btn-primary float-right mt-3" id="add-train">Submit</button>
         </div>
     </div>
@@ -61,105 +63,10 @@
     <script src="https://www.gstatic.com/firebasejs/6.0.4/firebase-database.js"></script>
     <!-- Train JS -->
     <!-- <script src="moment-with-locales.min.js"></script> -->
-    <script src="moment.min.js"></script>
-    <script>// Initialize Firebase (YOUR OWN APP)
-        // Make sure that your configuration matches your firebase script version
-        // (Ex. 3.0 != 3.7.1)
-        var firebaseConfig = {
-            apiKey: "AIzaSyD9b8dMN3qaV9qyr26jN0wQeIFEZTk1uvA",
-            authDomain: "in-class-trilogy-project.firebaseapp.com",
-            databaseURL: "https://in-class-trilogy-project.firebaseio.com",
-            projectId: "in-class-trilogy-project",
-            storageBucket: "in-class-trilogy-project.appspot.com",
-            messagingSenderId: "167778443868",
-            appId: "1:167778443868:web:cb83bdc003000243"
-
-        };
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-
-        // Create a variable to reference the database
-        // var database = ...
-        var database = firebase.database();
-        //==========================================
-
-        // Moved out of onclick function so that it'll automatically populate the page with information
-        database.ref().on("child_added", function (childSnap){
-            var trainName = childSnap.val().trainNames;
-            var trainDest = childSnap.val().trainDestinations;
-            var trainStart = childSnap.val().trainStarts;
-            var tFrequency = childSnap.val().trainFrequency;
-            var next = childSnap.val().next;
-            var min = childSnap.val().min;
-
-            $("#trainTable > tbody").append("<tr><td>" + trainName + "</td><td>" + trainDest + "</td><td>" + tFrequency + "</td><td>" + next + "</td><td>" + min + "</td></tr>");
-        });
-
-        $("#add-train").on("click", function () {
-            var trainName = $("#newName").val().trim();
-            var trainDest = $("#newDest").val().trim();
-            var trainStart = $("#newStart").val().trim();
-            var tFrequency = $("#newFrequency").val().trim();
-
-            // helps prevent empty answer boxes, because... users...
-            if (trainName == "") {
-                alert("Please enter a valid Train Name");
-                return false;
-            }
-            if (trainDest == "") {
-                alert("Please enter a valid Destination");
-                return false;
-            }
-            if (trainStart == "") {
-                alert("Please enter a valid initial start");
-                return false;
-            }
-            if (tFrequency == "") {
-                alert("Please enter a valid frequency");
-                return false;
-            }
-
-            // Conversion for time:
-            var firstTimeConverted = moment(trainStart, "HH:mm").subtract(1, "years");
-            // console.log(firstTimeConverted);
-
-            var currentTime = moment();
-            var diffTime = currentTime.diff(moment(firstTimeConverted), "minutes");
-            // console.log("DIFFERENCE IN TIME: " + diffTime);
-
-            var tRemainder = diffTime % tFrequency;
-            // console.log("Remainder: " + tRemainder);
-
-            var tMinutesTillTrain = tFrequency - tRemainder;
-            // console.log("Minutes till Train: " + tMinutesTillTrain);
-
-            var nextTrain = moment().add(tMinutesTillTrain, "hh:mm a");
-            // console.log("Arrival Time: " + moment(nextTrain).format("hh:mm"));
-
-
-            // Push all information in a var
-            var newTrain = {
-                //server:local
-                trainNames: trainName,
-                trainDestinations: trainDest,
-                trainStarts: trainStart,
-                trainFrequency: tFrequency,
-                dateAdded: firebase.database.ServerValue.TIMESTAMP,
-                min: tMinutesTillTrain,
-
-                
-                // next: nextTrain
-            }
-            console.log(newTrain);
-            database.ref().push(newTrain);
-            
-            // Clear out Input space
-            $("#newName").val("");
-            $("#newDest").val("");
-            $("#newStart").val("");
-            $("#newFrequency").val("");
-        });
-    </script>
+    <script src="assets/javascript/moment-with-locales.min.js"></script>
+    <script src="assets/javascript/moment.min.js"></script>
+    <!-- Personal JS -->
+    <script src="assets/javascript/app.js"></script>
 </body>
 
 </html>
