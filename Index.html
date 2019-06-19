@@ -6,13 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.bundle.min.js"></script>
-    <!-- Firebase js -->
-    <script src="https://www.gstatic.com/firebasejs/6.0.4/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/6.0.4/firebase-database.js"></script>
-    <!-- Train JS -->
-    <script src="moment-with-locales.min.js"></script>
     <title>Train Time</title>
 </head>
 
@@ -61,6 +54,13 @@
             <button type="submit" class="btn btn-primary float-right mt-3" id="add-train">Submit</button>
         </div>
     </div>
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.bundle.min.js"></script>
+    <!-- Firebase js -->
+    <script src="https://www.gstatic.com/firebasejs/6.0.4/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.0.4/firebase-database.js"></script>
+    <!-- Train JS -->
+    <script src="moment-with-locales.min.js"></script>
     <script>// Initialize Firebase (YOUR OWN APP)
         // Make sure that your configuration matches your firebase script version
         // (Ex. 3.0 != 3.7.1)
@@ -102,52 +102,59 @@
 
         // Moved out of onclick function so that it'll automatically populate the page with information
         database.ref().on("value", function (snapshot) {
-                var trainName = snapshot.val().trainNames;
-                var trainDest = snapshot.val().trainDestinations;
-                var trainStart = snapshot.val().trainDestinations;
-                var tFrequency = snapshot.val().monthlyRates;
+            var trainName = snapshot.val().trainNames;
+            var trainDest = snapshot.val().trainDestinations;
+            var trainStart = snapshot.val().trainDestinations;
+            var tFrequency = snapshot.val().monthlyRates;
 
-                var tRow = $("tr>");
-                var nametd = $("<td>").text(trainName);
-                var desttd = $("<td>").text(trainDest);
-                var starttd = $("<td>").text(trainStart);
-                var frequencytd = $("<td>").text(tFrequency);
+            var tRow = $("tr>");
+            var nametd = $("<td>").text(trainName);
+            var desttd = $("<td>").text(trainDest);
+            var starttd = $("<td>").text(trainStart);
+            var frequencytd = $("<td>").text(tFrequency);
 
-                // console.log(nametd);
-                // console.log(desttd);
-                // console.log(starttd);
-                // console.log(frequencytd);
-                tRow.append(nametd, desttd, frequencytd, starttd);
+            // console.log(nametd);
+            // console.log(desttd);
+            // console.log(starttd);
+            // console.log(frequencytd);
+            tRow.append(nametd, desttd, frequencytd, starttd);
+            $("tbody").append(tRow);
+        });
 
-                $("tbody").append(tRow);
-            })
-
-        $("#form-group").val("");
         $("#add-train").on("click", function () {
             event.preventDefault();
-            if(trainName == ""){
+            var trainName = $("#newName").val().trim();
+            var trainDest = $("#newDest").val().trim();
+            var trainStart = $("#newStart").val().trim();
+            var tFrequency = $("#newFrequency").val().trim();
+
+            // helps prevent empty answer boxes, because... users...
+            if (trainName == "") {
                 alert("Please enter a valid Train Name");
                 return false;
             }
-            if(trainDest == ""){
+            if (trainDest == "") {
                 alert("Please enter a valid Destination");
                 return false;
             }
-            if(trainStart == ""){
+            if (trainStart == "") {
                 alert("Please enter a valid initial start");
                 return false;
             }
-            if(tFrequency == ""){
+            if (tFrequency == "") {
                 alert("Please enter a valid frequency");
                 return false;
             }
+
             database.ref().push({
                 //server:local
+                newTrain = {
                 trainNames: trainName,
                 trainDestinations: trainDest,
                 trainStarts: trainStart,
                 trainFrequency: tFrequency,
                 dateAdded: firebase.database.ServerValue.TIMESTAMP
+                }
             });
         });
 
