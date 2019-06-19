@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <title>Train Time</title>
+</head>
+
+<body>
+    <div class="jumbotron mx-3 bg-info">
+        <h1 class="text-center text-white">Anytime is Train Time</h1>
+        <h3 class="text-center text-white">Choo Choo. Chee Chee</h2>
+    </div>
+
+    <div class="card m-3">
+        <div class="card-header">Current Train Schedule</div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Train Name</th>
+                        <th scope="col">Destination</th>
+                        <th scope="col">Frequency (min)</th>
+                        <th scope="col">Next Arrival</th>
+                        <th scope="col">Minutes Away</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td scope="col">Example Express</td>
+                        <td scope="col">Example Ville</td>
+                        <td scope="col">xx min</td>
+                        <td scope="col">xx:xx pm</td>
+                        <td scope="col">xx mins away</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card mt-4 mx-3">
+        <div class="card-header">Add Train</div>
+        <div class="card-body">
+            <label>Train Name:</label><br>
+            <input type="text" placeholder="Full Name" class="border rounded w-100" id="newName"><br>
+            <label>Destination:</label><br>
+            <input type="text" placeholder="Role" class="border rounded w-100" id="newDest"><br>
+            <label>First Train Time (HH:mm - military time):</label><br>
+            <input type="text" placeholder="mm/dd/yyyy" class="border rounded w-100" id="newStart"><br>
+            <label for="rate">Frequency (min):</label><br>
+            <input type="text" placeholder="$$$$" class="border rounded w-100" id="newFrequency"><br>
+            <button type="submit" class="btn btn-primary float-right mt-3" id="add-train">Submit</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.0.4/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.0.4/firebase-database.js"></script>
+    <script src="moment-with-locales.min.js"></script>
+    <script>// Initialize Firebase (YOUR OWN APP)
+        // Make sure that your configuration matches your firebase script version
+        // (Ex. 3.0 != 3.7.1)
+        var firebaseConfig = {
+            apiKey: "AIzaSyD9b8dMN3qaV9qyr26jN0wQeIFEZTk1uvA",
+            authDomain: "in-class-trilogy-project.firebaseapp.com",
+            databaseURL: "https://in-class-trilogy-project.firebaseio.com",
+            projectId: "in-class-trilogy-project",
+            storageBucket: "in-class-trilogy-project.appspot.com",
+            messagingSenderId: "167778443868",
+            appId: "1:167778443868:web:cb83bdc003000243"
+
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Create a variable to reference the database
+        // var database = ...
+        var database = firebase.database();
+        //==========================================
+        $(document).ready(function () {
+
+            var tFrequency = 3;
+            var firstTime = "03:30";
+            var firstTimeConverted = moment(firstTime, "HH:mm").subtract(1, "years");
+            console.log(firstTimeConverted);
+
+            var currentTime = moment();
+            var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+            console.log("DIFFERENCE IN TIME: " + diffTime);
+
+            var tRemainder = diffTime % tFrequency;
+            console.log("Remainder: " + tRemainder);
+
+            var tMinutesTillTrain = tFrequency - tRemainder;
+            console.log("Minutes till Train: " + tMinutesTillTrain);
+
+            var nextTrain = moment().add(tMinutesTillTrain, "minutes");
+            console.log("Arrival Time: " + moment(nextTrain).format("hh:mm"));
+
+            var trainName;
+            var trainDest;
+            var trainStart;
+
+            $("#form-group").val("");
+            $("#add-train").on("click", function () {
+                event.preventDefault();
+
+                database.ref().push({
+                    //server:local
+                    trainNames: trainName,
+                    trainDestinations: trainDest,
+                    trainStarts: trainStart,
+                    trainFrequency: tFrequency,
+                    dateAdded: firebase.database.ServerValue.TIMESTAMP
+                });
+                database.ref().on("value", function (snapshot) {
+                    trainName = snapshot.val().trainNames;
+                    trainDest = snapshot.val().trainDestinations;
+                    trainStart = snapshot.val().trainDestinations;
+                    tFrequency = snapshot.val().monthlyRates;
+
+                    var tRow = $("tr>");
+                    var nametd = $("<td>").text(trainName);
+                    var desttd = $("<td>").text(trainDest);
+                    var starttd = $("<td>").text(trainStart);
+                    var frequencytd = $("<td>").text(tFrequency);
+
+                    console.log(nametd);
+                    console.log(desttd);
+                    console.log(starttd);
+                    console.log(frequencytd);
+                    tRow.append(nametd, desttd, starttd, frequencytd);
+
+                    $("tbody").append(tRow);
+                }), function (errorObject) {
+                    console.log("The read failed: " + errorObject.code);
+                };
+            });
+
+
+            database.ref().on("value", function (snapshot) {
+
+                var sv = snapshot.val();
+
+                var svArr = Object.keys(sv);
+
+                var lastIndex = svArr.length - 1;
+
+                var lastKey = svArr[lastIndex];
+
+                var lastObj = sv[lastKey];
+
+            });
+        });
+
+    </script>
+</body>
+
+</html>
