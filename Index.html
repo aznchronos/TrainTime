@@ -48,7 +48,7 @@
             <label>Destination:</label><br>
             <input type="text" placeholder="Destination" class="border rounded w-100" id="newDest"><br>
             <label>First Train Time (HH:mm - military time):</label><br>
-            <input type="text" placeholder="mm/dd/yyyy" class="border rounded w-100" id="newStart"><br>
+            <input type="text" placeholder="HH:mm" class="border rounded w-100" id="newStart"><br>
             <label for="rate">Frequency (min):</label><br>
             <input type="text" placeholder="Minutes" class="border rounded w-100" id="newFrequency"><br>
             <button type="submit" class="btn btn-primary float-right mt-3" id="add-train">Submit</button>
@@ -60,7 +60,8 @@
     <script src="https://www.gstatic.com/firebasejs/6.0.4/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/6.0.4/firebase-database.js"></script>
     <!-- Train JS -->
-    <script src="moment-with-locales.min.js"></script>
+    <!-- <script src="moment-with-locales.min.js"></script> -->
+    <script src="moment.min.js"></script>
     <script>// Initialize Firebase (YOUR OWN APP)
         // Make sure that your configuration matches your firebase script version
         // (Ex. 3.0 != 3.7.1)
@@ -86,8 +87,8 @@
         database.ref().on("child_added", function (childSnap){
             var trainName = childSnap.val().trainNames;
             var trainDest = childSnap.val().trainDestinations;
-            var trainStart = childSnap.val().trainDestinations;
-            var tFrequency = childSnap.val().monthlyRates;
+            var trainStart = childSnap.val().trainStarts;
+            var tFrequency = childSnap.val().trainFrequency;
             var next = childSnap.val().next;
             var min = childSnap.val().min;
 
@@ -95,7 +96,6 @@
         });
 
         $("#add-train").on("click", function () {
-            event.preventDefault();
             var trainName = $("#newName").val().trim();
             var trainDest = $("#newDest").val().trim();
             var trainStart = $("#newStart").val().trim();
@@ -124,7 +124,7 @@
             // console.log(firstTimeConverted);
 
             var currentTime = moment();
-            var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+            var diffTime = currentTime.diff(moment(firstTimeConverted), "minutes");
             // console.log("DIFFERENCE IN TIME: " + diffTime);
 
             var tRemainder = diffTime % tFrequency;
@@ -133,7 +133,7 @@
             var tMinutesTillTrain = tFrequency - tRemainder;
             // console.log("Minutes till Train: " + tMinutesTillTrain);
 
-            var nextTrain = moment().add(tMinutesTillTrain, "minutes");
+            var nextTrain = moment().add(tMinutesTillTrain, "hh:mm a");
             // console.log("Arrival Time: " + moment(nextTrain).format("hh:mm"));
 
 
@@ -144,11 +144,20 @@
                 trainDestinations: trainDest,
                 trainStarts: trainStart,
                 trainFrequency: tFrequency,
-                dateAdded: firebase.database.ServerValue.TIMESTAMP
+                dateAdded: firebase.database.ServerValue.TIMESTAMP,
+                min: tMinutesTillTrain,
+
+                
+                // next: nextTrain
             }
             console.log(newTrain);
             database.ref().push(newTrain);
-
+            
+            // Clear out Input space
+            $("#newName").val("");
+            $("#newDest").val("");
+            $("#newStart").val("");
+            $("#newFrequency").val("");
         });
     </script>
 </body>
