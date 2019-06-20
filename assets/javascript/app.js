@@ -19,48 +19,46 @@ firebase.initializeApp(firebaseConfig);
 var database = firebase.database();
 //==========================================
 
-// Moved out of onclick function so that it'll automatically populate the page with information
-database.ref().on("child_added", function (childSnap) {
-    var trainName = childSnap.val().trainNames;
-    var trainDest = childSnap.val().trainDestinations;
-    var trainStart = childSnap.val().trainStarts;
-    var tFrequency = childSnap.val().trainFrequency;
-    var next = childSnap.val().next;
-    var min = childSnap.val().min;
-
-    $("#trainTable > tbody").append("<tr><td>" + trainName + "</td><td>" + trainDest + "</td><td>" + tFrequency + "</td><td>" + next + "</td><td>" + min + "</td></tr>");
-});
-
 $("#add-train").on("click", function () {
+    event.preventDefault();
     var trainName = $("#newName").val().trim();
     var trainDest = $("#newDest").val().trim();
     var trainStart = $("#newStart").val().trim();
     var tFrequency = $("#newFrequency").val().trim();
 
-    // helps prevent empty answer boxes, because... users...
-    if (trainName == "") {
-        alert("Please enter a valid Train Name");
-        return false;
+    // Push all information in a var
+    var newTrain = {
+        //server:local
+        trainNames: trainName,
+        trainDestinations: trainDest,
+        trainStarts: trainStart,
+        trainFrequency: tFrequency,
+        dateAdded: firebase.database.ServerValue.TIMESTAMP
     }
-    if (trainDest == "") {
-        alert("Please enter a valid Destination");
-        return false;
-    }
-    if (trainStart == "") {
-        alert("Please enter a valid initial start");
-        return false;
-    }
-    if (tFrequency == "") {
-        alert("Please enter a valid frequency");
-        return false;
-    }
+    // console.log(newTrain);
+    database.ref("trains").push(newTrain);
+
+    // Clear out Input space
+    $("#newName").val("");
+    $("#newDest").val("");
+    $("#newStart").val("");
+    $("#newFrequency").val("");
+});
+
+// Moved out of onclick function so that it'll automatically populate the page with information
+database.ref("trains").on("child_added", function (childSnap) {
+    var trainName = childSnap.val().trainNames;
+    var trainDest = childSnap.val().trainDestinations;
+    var trainStart = childSnap.val().trainStarts;
+    var tFrequency = childSnap.val().trainFrequency;
+    var next = moment(moment().add(tMinutesTillTrain, "minutes")).format('hh:mm A');
 
     // Conversion for time:
-    var firstTimeConverted = moment(trainStart, "hh:mm").subtract(1, "years");
+    var firstTimeConverted = moment(trainStart, "HH:mm").subtract(1, "years");
     // console.log(firstTimeConverted);
 
     var currentTime = moment();
-    var diffTime = currentTime.diff(moment(firstTimeConverted), "minutes");
+    var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
     // console.log("DIFFERENCE IN TIME: " + diffTime);
 
     var tRemainder = diffTime % tFrequency;
@@ -72,25 +70,5 @@ $("#add-train").on("click", function () {
     var nextTrain = moment().add(tMinutesTillTrain, "minutes");
     // console.log("Arrival Time: " + moment(nextTrain).format("hh:mm"));
 
-
-    // Push all information in a var
-    var newTrain = {
-        //server:local
-        trainNames: trainName,
-        trainDestinations: trainDest,
-        trainStarts: trainStart,
-        trainFrequency: tFrequency,
-        dateAdded: firebase.database.ServerValue.TIMESTAMP,
-        min: tMinutesTillTrain,
-
-        // next: nextTrain
-    }
-    console.log(newTrain);
-    database.ref().push(newTrain);
-
-    // Clear out Input space
-    $("#newName").val("");
-    $("#newDest").val("");
-    $("#newStart").val("");
-    $("#newFrequency").val("");
+    $("#trainTable > tbody").append("<tr><td>" + trainName + "</td><td>" + trainDest + "</td><td>" + tFrequency + "</td><td>" + next + "</td><td>" + tMinutesTillTrain + "</td></tr>");
 });
